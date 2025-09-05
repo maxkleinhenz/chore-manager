@@ -9,16 +9,22 @@ import (
 
 func main() {
 	e := echo.New()
+
+	e.Static("/static", "assets")
+
 	e.GET("/", homeHandler)
 	e.Logger.Fatal(e.Start(":3000"))
 }
 
 func homeHandler(c echo.Context) error {
-
 	titlePage := "Test"
 
-	return renderView(c, views.Home(
+	return renderView(c, views.HomeIndex(
 		titlePage,
+		[]string{}, []string{},
+		// getFlashmessages(c, "error"),
+		// getFlashmessages(c, "success"),
+		views.Home(titlePage),
 	))
 }
 
