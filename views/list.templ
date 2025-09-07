@@ -4,6 +4,7 @@ import (
 	"chore-manager/db"
 	"chore-manager/views/layout"
 	"chore-manager/views/partials"
+	"time"
 )
 
 templ actions(chore_id int64, status string) {
@@ -48,18 +49,18 @@ templ List(duties []db.FindDutiesRow) {
 				<h2 class="bg-error p-4 font-semibold">Overdue chores</h2>
 				<div class="grid grid-cols-[auto_1fr_auto] gap-4 p-4">
 					for i, duty := range overdue {
-						<div class="grid grid-cols-subgrid col-span-3">
+						if i >0 {
+							<div class="divider col-span-full m-0 h-1 before:h-0.25 after:h-0.25"></div>
+						}
+						<div class="grid grid-cols-subgrid col-span-full">
 							@partials.ChoreBadge(duty.ChoreID, duty.ChoreName)
 							// <div class="bg-green-700/70 text-white flex justify-center items-center p-2 rounded-box">{ duty.ChoreName }</div>
 							<div class="grid">
 								<div>{ duty.EmployeeName }</div>
-								<div class="text-xs font-semibold opacity-60">{ duty.AssignedDate.Format("2006-01-02") } </div>
+								<div class="text-xs font-semibold opacity-60">{ duty.AssignedDate.Format("02.01.2006") } - { duty.AssignedDate.Add(7*24*time.Hour).Format("02.01.2006") } </div>
 							</div>
 							@actions(duty.ChoreID, duty.Status)
 						</div>
-						if i < len(overdue)-1 {
-							<div class="divider col-span-3 m-0 h-1 before:h-0.25 after:h-0.25"></div>
-						}
 					}
 				</div>
 			</div>
@@ -68,32 +69,40 @@ templ List(duties []db.FindDutiesRow) {
 			<h2 class="p-4 pb-2 font-semibold">Chores this week</h2>
 			<div class="grid grid-cols-[auto_1fr_auto] gap-4 p-4">
 				for i, duty := range current {
-					<div class="grid grid-cols-subgrid col-span-3">
+					if i >0 {
+						<div class="divider col-span-full m-0 h-1 before:h-0.25 after:h-0.25"></div>
+					}
+					<div class="grid grid-cols-subgrid col-span-full">
 						@partials.ChoreBadge(duty.ChoreID, duty.ChoreName)
 						// <div class="bg-green-700/70 text-white flex justify-center items-center p-2 rounded-box">{ duty.ChoreName }</div>
-						<div class="flex items-center">{ duty.EmployeeName } { duty.AssignedDate.Format("2006-01-02") } </div>
+						<div class="flex items-center">{ duty.EmployeeName } </div>
 						@actions(duty.ChoreID, duty.Status)
 					</div>
-					if i < len(current)-1 {
-						<div class="divider col-span-3 m-0 h-1 before:h-0.25 after:h-0.25"></div>
-					}
 				}
 			</div>
 		</div>
 		if len(future) > 0 {
 			<div class="bg-base-100 border border-neutral-content rounded-box shadow-md">
 				<h2 class="p-4 pb-2 font-semibold">Next chores</h2>
-				<div class="grid grid-cols-[auto_1fr_auto] gap-4 p-4">
+				<div class="grid grid-cols-[auto_1fr] gap-4 p-4">
+					{{ lastDate := future[0].AssignedDate }}
 					for i, duty := range future {
-						<div class="grid grid-cols-subgrid col-span-3">
+						if i >0 {
+							if lastDate.Before(duty.AssignedDate) {
+								<div class="divider bg-gray-600/40 col-span-full m-0 h-1"></div>
+							} else {
+								<div class="divider col-span-full m-0 h-0.5"></div>
+							}
+						}
+						<div class="grid grid-cols-subgrid col-span-full">
 							@partials.ChoreBadge(duty.ChoreID, duty.ChoreName)
 							// <div class="bg-green-700/70 text-white flex justify-center items-center p-2 rounded-box">{ duty.ChoreName }</div>
-							<div class="flex items-center">{ duty.EmployeeName } { duty.AssignedDate.Format("2006-01-02") } </div>
-							@actions(duty.ChoreID, duty.Status)
+							<div class="grid">
+								<div>{ duty.EmployeeName }</div>
+								<div class="text-xs font-semibold opacity-60">{ duty.AssignedDate.Format("02.01.2006") } - { duty.AssignedDate.Add(7*24*time.Hour).Format("02.01.2006") } </div>
+							</div>
 						</div>
-						if i < len(future)-1 {
-							<div class="divider col-span-3 m-0 h-1 before:h-0.25 after:h-0.25"></div>
-						}
+						{{ lastDate = duty.AssignedDate }}
 					}
 				</div>
 			</div>
