@@ -19,12 +19,12 @@ func main() {
 func homeHandler(c echo.Context) error {
 	titlePage := "Test"
 
-	return renderView(c, views.HomeIndex(
+	return renderView(c, views.ListIndex(
 		titlePage,
 		[]string{}, []string{},
 		// getFlashmessages(c, "error"),
 		// getFlashmessages(c, "success"),
-		views.Home(titlePage),
+		views.List(titlePage),
 	))
 }
 
