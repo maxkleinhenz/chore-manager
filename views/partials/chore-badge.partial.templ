@@ -1,0 +1,22 @@
+package partials
+
+import "fmt"
+
+func choreColor(choreId int64) string {
+	switch choreId {
+	case 1:
+		return "bg-green-700/70"
+	case 2:
+		return "bg-neutral-700/70"
+	case 3:
+		return "bg-blue-700/70"
+	case 4:
+		return "bg-red-700/70"
+	default:
+		return "bg-gray-700/70"
+	}
+}
+
+templ ChoreBadge(choreId int64, choreName string) {
+	<div class={ fmt.Sprintf("%s text-white flex justify-center items-center p-2 rounded-box", choreColor(choreId)) }>{ choreName }</div>
+}

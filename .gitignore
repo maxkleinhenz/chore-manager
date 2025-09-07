@@ -30,6 +30,7 @@ go.work.sum
 .env
 
 node_modules/
+db/chores.db
 
 # Editor/IDE
 # .idea/

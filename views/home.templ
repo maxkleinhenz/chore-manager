@@ -3,16 +3,16 @@ package views
 import "chore-manager/views/layout"
 
 templ Home(title string) {
-// @Layout(title) {
-<h1>Welcome home!</h1>
-// }
+	// @Layout(title) {
+	<h1>Welcome home!</h1>
+	// }
 }
 
 templ HomeIndex(
-    title string,
+	title string,
 	errMsgs, sucMsgs []string,
-    cmp templ.Component,
-    ) {
+	cmp templ.Component,
+) {
 	@layout.Base(title, errMsgs, sucMsgs) {
 		@cmp
 	}

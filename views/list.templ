@@ -1,62 +1,103 @@
 package views
 
-import "chore-manager/views/layout"
+import (
+	"chore-manager/db"
+	"chore-manager/views/layout"
+	"chore-manager/views/partials"
+)
 
-templ List(title string) {
-	<div class="p-10">
+templ actions(chore_id int64, status string) {
+	switch status {
+		case "done":
+			<div class="flex flex-wrap gap-2 items-center justify-end">
+				<div class="badge badge-success"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check-icon lucide-check"><path d="M20 6 9 17l-5-5"></path></svg> Done</div>
+			</div>
+		case "done_by_other":
+			<div class="flex flex-wrap gap-2 items-center justify-end">
+				<div class="badge badge-info"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check-icon lucide-check"><path d="M20 6 9 17l-5-5"></path></svg> Done by someone else</div>
+			</div>
+		default:
+			<div class="flex flex-wrap gap-2 items-center justify-end">
+				<button class="btn btn-primary">
+					<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check-icon lucide-check"><path d="M20 6 9 17l-5-5"></path></svg> Done
+				</button>
+				<button class="btn btn-outline">
+					<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user-round-check-icon lucide-user-round-check"><path d="M2 21a8 8 0 0 1 13.292-6"></path><circle cx="10" cy="8" r="5"></circle><path d="m16 19 2 2 4-4"></path></svg> Done by someone else
+				</button>
+			</div>
+	}
+}
+
+templ List(duties []db.FindDutiesRow) {
+	{{ current := []db.FindDutiesRow{} }}
+	{{ overdue := []db.FindDutiesRow{} }}
+	{{ future := []db.FindDutiesRow{} }}
+	for _, duty := range duties {
+		switch duty.WeekStatus {
+			case "overdue":
+				{{ overdue = append(overdue, duty) }}
+			case "future":
+				{{ future = append(future, duty) }}
+			default:
+				{{ current = append(current, duty) }}
+		}
+	}
+	<div class="p-10 grid gap-12">
+		if len(overdue) > 0 {
+			<div class="bg-base-100 border border-error rounded-box shadow-md overflow-hidden ">
+				<h2 class="bg-error p-4 font-semibold">Overdue chores</h2>
+				<div class="grid grid-cols-[auto_1fr_auto] gap-4 p-4">
+					for i, duty := range overdue {
+						<div class="grid grid-cols-subgrid col-span-3">
+							@partials.ChoreBadge(duty.ChoreID, duty.ChoreName)
+							// <div class="bg-green-700/70 text-white flex justify-center items-center p-2 rounded-box">{ duty.ChoreName }</div>
+							<div class="grid">
+								<div>{ duty.EmployeeName }</div>
+								<div class="text-xs font-semibold opacity-60">{ duty.AssignedDate.Format("2006-01-02") } </div>
+							</div>
+							@actions(duty.ChoreID, duty.Status)
+						</div>
+						if i < len(overdue)-1 {
+							<div class="divider col-span-3 m-0 h-1 before:h-0.25 after:h-0.25"></div>
+						}
+					}
+				</div>
+			</div>
+		}
 		<div class="bg-base-100 border border-neutral-content rounded-box shadow-md">
 			<h2 class="p-4 pb-2 font-semibold">Chores this week</h2>
 			<div class="grid grid-cols-[auto_1fr_auto] gap-4 p-4">
-				<div class="grid grid-cols-subgrid col-span-3">
-					<div class="bg-green-700/70 text-white flex justify-center items-center p-2 rounded-box">Watering plants</div>
-					<div class="flex items-center">Max</div>
-					<div class="flex flex-wrap gap-2 items-center justify-end">
-						<button class="btn btn-primary">
-							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check-icon lucide-check"><path d="M20 6 9 17l-5-5"></path></svg> Done
-						</button>
-						<button class="btn btn-outline">
-							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user-round-check-icon lucide-user-round-check"><path d="M2 21a8 8 0 0 1 13.292-6"></path><circle cx="10" cy="8" r="5"></circle><path d="m16 19 2 2 4-4"></path></svg> Done by someone else
-						</button>
+				for i, duty := range current {
+					<div class="grid grid-cols-subgrid col-span-3">
+						@partials.ChoreBadge(duty.ChoreID, duty.ChoreName)
+						// <div class="bg-green-700/70 text-white flex justify-center items-center p-2 rounded-box">{ duty.ChoreName }</div>
+						<div class="flex items-center">{ duty.EmployeeName } { duty.AssignedDate.Format("2006-01-02") } </div>
+						@actions(duty.ChoreID, duty.Status)
 					</div>
-				</div>
-				<!-- -->
-				<div class="divider col-span-3 m-0 h-1 before:h-0.25 after:h-0.25"></div>
-				<!-- -->
-				<div class="grid grid-cols-subgrid col-span-3">
-					<div class="bg-blue-700/70 text-white flex justify-center items-center p-2 rounded-box">Cleaning dev kitchen</div>
-					<div class="flex items-center">Max</div>
-					<div class="flex flex-wrap gap-2 items-center justify-end">
-						<button class="btn btn-primary">
-							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check-icon lucide-check"><path d="M20 6 9 17l-5-5"></path></svg> Done
-						</button>
-						<button class="btn btn-outline">
-							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user-round-check-icon lucide-user-round-check"><path d="M2 21a8 8 0 0 1 13.292-6"></path><circle cx="10" cy="8" r="5"></circle><path d="m16 19 2 2 4-4"></path></svg> Done by someone else
-						</button>
-					</div>
-				</div>
-				<!-- -->
-				<div class="divider col-span-3 m-0 h-1 before:h-0.25 after:h-0.25"></div>
-				<!-- -->
-				<div class="grid grid-cols-subgrid col-span-3">
-					<div class="bg-neutral-700/70 text-white flex justify-center items-center p-2 rounded-box">Cleaning coffee kitchen</div>
-					<div class="flex items-center">Max</div>
-					<div class="flex flex-wrap gap-2 items-center justify-end">
-						<div class="badge badge-info"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check-icon lucide-check"><path d="M20 6 9 17l-5-5"></path></svg> Done by someone else</div>
-					</div>
-				</div>
-				<!-- -->
-				<div class="divider col-span-3 m-0 h-1 before:h-0.25 after:h-0.25"></div>
-				<!-- -->
-				<div class="grid grid-cols-subgrid col-span-3">
-					<div class="bg-red-700/70 text-white flex justify-center items-center p-2 rounded-box">Cleaning lunch room</div>
-					<div class="flex items-center">Max</div>
-					<div class="flex flex-wrap gap-2 items-center justify-end">
-						<div class="badge badge-success"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check-icon lucide-check"><path d="M20 6 9 17l-5-5"></path></svg> Done</div>
-					</div>
+					if i < len(current)-1 {
+						<div class="divider col-span-3 m-0 h-1 before:h-0.25 after:h-0.25"></div>
+					}
+				}
+			</div>
+		</div>
+		if len(future) > 0 {
+			<div class="bg-base-100 border border-neutral-content rounded-box shadow-md">
+				<h2 class="p-4 pb-2 font-semibold">Next chores</h2>
+				<div class="grid grid-cols-[auto_1fr_auto] gap-4 p-4">
+					for i, duty := range future {
+						<div class="grid grid-cols-subgrid col-span-3">
+							@partials.ChoreBadge(duty.ChoreID, duty.ChoreName)
+							// <div class="bg-green-700/70 text-white flex justify-center items-center p-2 rounded-box">{ duty.ChoreName }</div>
+							<div class="flex items-center">{ duty.EmployeeName } { duty.AssignedDate.Format("2006-01-02") } </div>
+							@actions(duty.ChoreID, duty.Status)
+						</div>
+						if i < len(future)-1 {
+							<div class="divider col-span-3 m-0 h-1 before:h-0.25 after:h-0.25"></div>
+						}
+					}
 				</div>
 			</div>
-			<div class="grid grid-cols-[auto_1fr_auto] gap-4 p-4"></div>
-		</div>
+		}
 	</div>
 }
 
